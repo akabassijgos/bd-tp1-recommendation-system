@@ -28,7 +28,7 @@ st.markdown("""
 }
 
 .scroll-item {
-    min-width: 160px;
+    min-width: 90px;
     flex-shrink: 0;
 }
 
@@ -40,11 +40,9 @@ st.markdown("""
 
 /* IMAGE */
 .movie-card img {
-    border-radius: 12px;
+    border-radius: 10px;
     width: 100%;
     height: auto;
-    object-fit: cover;
-    transition: transform 0.2s ease;
 }
 
 .movie-card img:hover {
@@ -53,11 +51,10 @@ st.markdown("""
 
 /* TITLE FIXED HEIGHT */
 .movie-title {
-    margin-top: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    line-height: 1.2em;
-    height: 2.4em;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    line-height: 1.1em;
+    height: 2.2em;
     overflow: hidden;
 }
 
@@ -100,14 +97,15 @@ def search_movies_db(query=None, genre=None, limit=50):
 
 # ---------- CARD ----------
 def render_card(movie):
-    poster = get_movie_poster(movie["tmdb_id"])
+    poster = get_movie_poster(movie.get("tmdb_id"))
+    title = movie.get("title", "Unknown")
 
     img_html = f"<img src='{poster}'/>" if poster else ""
 
     return f"""
     <div class="movie-card">
         {img_html}
-        <div class="movie-title">{movie['title']}</div>
+        <div class="movie-title">{title}</div>
     </div>
     """
 
@@ -118,12 +116,12 @@ def render_grid(movies):
         st.info("Aucun film trouvé")
         return
 
-    html = '<div class="grid-container">'
-    for _, movie in movies.iterrows():
-        html += render_card(movie)
-    html += "</div>"
+    st.markdown('<div class="grid-container">', unsafe_allow_html=True)
 
-    st.markdown(html, unsafe_allow_html=True)
+    for _, movie in movies.iterrows():
+        st.markdown(render_card(movie), unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ---------- SCROLL ----------
