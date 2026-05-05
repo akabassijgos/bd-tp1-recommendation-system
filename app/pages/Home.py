@@ -107,14 +107,19 @@ def render_grid(movies):
         st.info("Aucun film trouvé")
         return
 
-    html = '<div class="grid-container">'
+    chunk_size = 1  # CRITIQUE (ne pas dépasser ~15)
 
-    for _, movie in movies.iterrows():
-        html += render_card(movie)
+    for i in range(0, len(movies), chunk_size):
+        chunk = movies.iloc[i:i + chunk_size]
 
-    html += "</div>"
+        html = '<div class="grid-container">'
 
-    st.markdown(html, unsafe_allow_html=True)
+        for _, movie in chunk.iterrows():
+            html += render_card(movie)
+
+        html += "</div>"
+
+        st.markdown(html, unsafe_allow_html=True)
 
 
 # ---------- SCROLL ----------
