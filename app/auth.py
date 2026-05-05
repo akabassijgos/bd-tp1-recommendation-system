@@ -29,12 +29,27 @@ def is_valid_email(email):
     return re.match(pattern, email) is not None
 
 
-def create_user(email, password, first_name="", last_name=""):
+def create_user(email, password, confirm_password, first_name="", last_name=""):
+    if not email or not password or not confirm_password or not first_name or not last_name:
+        raise ValueError("Tous les champs sont obligatoires")
+
     if not is_valid_email(email):
-        raise ValueError("Invalid email format")
+        raise ValueError("Format d'email invalide")
+
+    if password != confirm_password:
+        raise ValueError("Les mots de passe ne correspondent pas")
+
+    if len(password) < 6:
+        raise ValueError("Le mot de passe doit contenir au moins 6 caractères")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
+    # vérifier si email existe déjà
+    cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+    if cursor.fetchone():
+        conn.close()
+        raise ValueError("Cet email est déjà utilisé")
 
     hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 

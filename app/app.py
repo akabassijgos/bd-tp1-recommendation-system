@@ -44,15 +44,24 @@ def register_ui():
         first_name = st.text_input("Prénom")
         last_name = st.text_input("Nom")
         password = st.text_input("Mot de passe", type="password")
+        confirm_password = st.text_input("Confirmer le mot de passe", type="password")
 
         submitted = st.form_submit_button("Créer un compte")
 
         if submitted:
-            try:
-                create_user(email, password, first_name, last_name)
-                st.success("Compte créé")
-            except Exception as e:
-                st.error(str(e))
+            with st.spinner("Création du compte..."):
+                try:
+                    create_user(
+                        email,
+                        password,
+                        confirm_password,
+                        first_name,
+                        last_name
+                    )
+                    st.success("Compte créé avec succès")
+
+                except ValueError as e:
+                    st.error(str(e))
 
 
 if st.session_state.user is None:
