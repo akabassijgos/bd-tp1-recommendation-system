@@ -127,3 +127,16 @@ def update_user_info(user_id, first_name, last_name, birth_date, gender):
 
     conn.commit()
     conn.close()
+
+
+def delete_all_user_ratings(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM ratings
+        WHERE user_id = ?
+    """, (user_id,))
+
+    conn.commit()
+    conn.close()

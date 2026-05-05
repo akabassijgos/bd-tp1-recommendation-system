@@ -4,9 +4,10 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from auth import update_profile_picture
+from auth import update_profile_picture, delete_all_user_ratings
 from ratings import get_user_rating
 from tmdb import get_movie_poster
+from recommender import load_data
 
 DB_PATH = "app.db"
 
@@ -227,3 +228,25 @@ else:
             )
             st.caption(row.title)
             st.write(f"⭐ {row.rating}")
+
+
+# ---------------- RESET RATINGS ----------------
+st.markdown("### ⚠️ Zone de danger")
+
+st.warning("Cette action supprimera toutes vos notes de films.")
+
+confirm = st.checkbox("Je confirme vouloir supprimer toutes mes notes")
+
+if st.button("Supprimer toutes mes notes"):
+    if confirm:
+        delete_all_user_ratings(user_id)
+
+        # reset cache / session
+        st.session_state["refresh_reco"] = True
+
+        st.success("Toutes vos notes ont été supprimées")
+
+        load_data.clear()
+        st.rerun()
+    else:
+        st.error("Veuillez confirmer la suppression")
