@@ -75,20 +75,34 @@ def render_card(movie):
 def render_rating_widget(movie, user):
     movie_id = movie["id"]
 
-    current_rating = get_user_rating(user["id"], movie_id) or 0
+    current_rating = get_user_rating(user["id"], movie_id)
+
+    # valeur affichée dans le slider
+    display_value = current_rating if current_rating is not None else 0.5
 
     new_rating = st.slider(
         "Votre note",
         0.5,
         5.0,
-        float(current_rating) if current_rating else 0.5,
+        float(display_value),
         step=0.5,
         key=f"rating_{movie_id}"
     )
 
-    if new_rating != current_rating:
-        rate_movie(user["id"], movie_id, new_rating)
-        load_data.clear()
+    # éviter les écritures automatiques au premier rendu
+    if current_rating is None:
+        # première apparition du slider → on ne fait rien
+        if new_rating != 0.5:
+            rate_movie(user["id"], movie_id, new_rating)
+            load_data.clear()
+            st.rerun()
+
+    else:
+        # modification réelle d'une note existante
+        if new_rating != current_rating:
+            rate_movie(user["id"], movie_id, new_rating)
+            load_data.clear()
+            st.rerun()
 
 
 # ---------------- GRID ----------------
