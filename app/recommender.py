@@ -13,7 +13,10 @@ def load_data():
     conn = sqlite3.connect(DB_PATH)
 
     ratings = pd.read_sql("SELECT user_id, movie_id, rating FROM ratings", conn)
-    movies = pd.read_sql("SELECT id, title FROM movies", conn)
+    movies = pd.read_sql("""
+        SELECT id, title, genres, tmdb_id
+        FROM movies
+    """, conn)
 
     conn.close()
     return ratings, movies
