@@ -7,10 +7,6 @@ img {
     border-radius: 10px;
 }
 
-.block-container {
-    padding-top: 1rem;
-}
-
 [data-testid="column"] {
     min-width: 150px;
 }
