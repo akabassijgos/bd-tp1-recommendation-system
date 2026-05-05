@@ -59,7 +59,7 @@ def insert_movies(conn):
         "tmdbId": "tmdb_id"
     })
 
-    movies.to_sql("movies", conn, if_exists="replace", index=False)
+    movies.to_sql("movies", conn, if_exists="append", index=False)
 
 
 def insert_ratings(conn):
@@ -72,7 +72,7 @@ def insert_ratings(conn):
 
     ratings = ratings[["user_id", "movie_id", "rating"]]
 
-    ratings.to_sql("ratings", conn, if_exists="replace", index=False)
+    ratings.to_sql("ratings", conn, if_exists="append", index=False)
 
 
 def set_user_autoincrement(conn):
