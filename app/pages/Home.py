@@ -1,97 +1,145 @@
 import streamlit as st
+import sqlite3
 from recommender import *
-from components import movie_card
 from tmdb import get_movie_poster
+from utils import extract_genres
 
 st.set_page_config(layout="wide")
 
-# CSS UI avancé
+DB_PATH = "app.db"
+
+# ---------- CSS ----------
 st.markdown("""
 <style>
+
+/* GRID RESPONSIVE */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+/* SCROLL HORIZONTAL */
+.scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    padding-bottom: 10px;
+}
+
+.scroll-item {
+    min-width: 160px;
+    flex-shrink: 0;
+}
+
+/* CARD */
 .movie-card {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
-.movie-title {
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-top: 5px;
-    height: 2.5em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.poster {
+/* IMAGE */
+.movie-card img {
     border-radius: 12px;
-    transition: transform 0.2s ease-in-out;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    transition: transform 0.2s ease;
 }
 
-.poster:hover {
+.movie-card img:hover {
     transform: scale(1.05);
 }
+
+/* TITLE FIXED HEIGHT */
+.movie-title {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.2em;
+    height: 2.4em;
+    overflow: hidden;
+}
+
+/* SCROLLBAR CLEAN */
+.scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
+# ---------- DB SEARCH ----------
+def search_movies_db(query=None, genre=None, limit=50):
+    conn = sqlite3.connect(DB_PATH)
 
-# ---------- UTILS UI ----------
+    sql = "SELECT * FROM movies WHERE 1=1"
+    params = []
 
-def extract_genres(movies_df):
-    genres_set = set()
+    if query:
+        sql += " AND title LIKE ?"
+        params.append(f"%{query}%")
 
-    for genres in movies_df["genres"]:
-        for g in genres.split("|"):
-            genres_set.add(g)
+    if genre and genre != "Tous":
+        sql += " AND genres LIKE ?"
+        params.append(f"%{genre}%")
 
-    return sorted(genres_set)
+    sql += " LIMIT ?"
+    params.append(limit)
+
+    df = pd.read_sql(sql, conn, params=params)
+    conn.close()
+
+    return df
 
 
-def render_movie_card(movie):
+# ---------- CARD ----------
+def render_card(movie):
     poster = get_movie_poster(movie["tmdb_id"])
 
-    with st.container():
-        if poster:
-            st.image(poster, use_container_width=True)
-        else:
-            st.write("")
+    img_html = f"<img src='{poster}'/>" if poster else ""
 
-        st.markdown(
-            f"<div class='movie-title'>{movie['title']}</div>",
-            unsafe_allow_html=True
-        )
+    return f"""
+    <div class="movie-card">
+        {img_html}
+        <div class="movie-title">{movie['title']}</div>
+    </div>
+    """
 
 
-def horizontal_scroll_section(movies, title):
-    if movies.empty:
-        return
-
-    st.markdown(f"## {title}")
-
-    cols = st.columns(8)
-
-    for i, (_, movie) in enumerate(movies.iterrows()):
-        with cols[i % 8]:
-            render_movie_card(movie)
-
-
-def grid_section(movies, title):
+# ---------- GRID ----------
+def render_grid(movies):
     if movies.empty:
         st.info("Aucun film trouvé")
         return
 
-    st.markdown(f"## {title}")
+    html = '<div class="grid-container">'
+    for _, movie in movies.iterrows():
+        html += render_card(movie)
+    html += "</div>"
 
-    cols_per_row = 5
-    rows = [movies[i:i+cols_per_row] for i in range(0, len(movies), cols_per_row)]
-
-    for row in rows:
-        cols = st.columns(cols_per_row)
-        for col, (_, movie) in zip(cols, row.iterrows()):
-            with col:
-                render_movie_card(movie)
+    st.markdown(html, unsafe_allow_html=True)
 
 
-# ---------- DATA ----------
+# ---------- SCROLL ----------
+def render_scroll(movies):
+    if movies.empty:
+        return
 
+    html = '<div class="scroll-container">'
+    for _, movie in movies.iterrows():
+        html += f'<div class="scroll-item">{render_card(movie)}</div>'
+    html += "</div>"
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+# ---------- LOAD ----------
 ratings, movies = load_data()
 
 user = st.session_state.get("user")
@@ -100,8 +148,8 @@ if not user:
     st.warning("Veuillez vous connecter")
     st.stop()
 
-
-# ---------- CONTROLES UI ----------
+# ---------- HEADER ----------
+st.title("Accueil")
 
 view_mode = st.radio(
     "Affichage",
@@ -109,34 +157,24 @@ view_mode = st.radio(
     horizontal=True
 )
 
-search_query = st.text_input("Rechercher un film")
+# ---------- SEARCH ----------
+col1, col2 = st.columns([3, 1])
 
-genres = extract_genres(movies)
-selected_genre = st.selectbox("Genre", ["Tous"] + genres)
+with col1:
+    search_query = st.text_input("Rechercher un film")
 
+with col2:
+    genres = extract_genres(movies)
+    selected_genre = st.selectbox("Genre", ["Tous"] + genres)
 
-# ---------- FILTRAGE ----------
-
-filtered_movies = movies.copy()
-
-if search_query:
-    filtered_movies = filtered_movies[
-        filtered_movies["title"].str.contains(search_query, case=False)
-    ]
-
-if selected_genre != "Tous":
-    filtered_movies = filtered_movies[
-        filtered_movies["genres"].str.contains(selected_genre)
-    ]
-
+search_results = search_movies_db(search_query, selected_genre, 50)
 
 # ---------- PERSONNALISÉ ----------
-
 user_ratings = ratings[ratings["user_id"] == user["id"]]
 
-recs_personal = None
-
 if len(user_ratings) >= 5:
+    st.markdown("## Recommandés pour vous")
+
     matrix, user_map, movie_map = build_sparse_matrix(ratings)
     sim = compute_item_similarity(matrix)
 
@@ -144,29 +182,29 @@ if len(user_ratings) >= 5:
         user["id"], ratings, matrix, user_map, movie_map, sim, 20
     )
 
-    recs_personal = filtered_movies[
-        filtered_movies["id"].isin(rec_ids)
-    ]
+    recs_personal = movies[movies["id"].isin(rec_ids)]
 
+    if view_mode == "Scroll":
+        render_scroll(recs_personal)
+    else:
+        render_grid(recs_personal)
 
-# ---------- POPULAIRE ----------
+# ---------- POPULAIRES ----------
+st.markdown("## Films populaires")
 
 recs_pop = get_popular_movies(30)
-recs_pop = recs_pop.merge(filtered_movies, on="id")
+recs_pop = recs_pop.merge(movies, on="id")
 
-
-# ---------- RENDER ----------
-
-# PERSONNALISÉ EN HAUT
-if recs_personal is not None and not recs_personal.empty:
-    if view_mode == "Scroll":
-        horizontal_scroll_section(recs_personal, "Recommandés pour vous")
-    else:
-        grid_section(recs_personal, "Recommandés pour vous")
-
-
-# POPULAIRE TOUJOURS
 if view_mode == "Scroll":
-    horizontal_scroll_section(recs_pop, "Films populaires")
+    render_scroll(recs_pop)
 else:
-    grid_section(recs_pop, "Films populaires")
+    render_grid(recs_pop)
+
+# ---------- SEARCH RESULTS ----------
+if search_query or selected_genre != "Tous":
+    st.markdown("## Résultats de recherche")
+
+    if view_mode == "Scroll":
+        render_scroll(search_results)
+    else:
+        render_grid(search_results)
