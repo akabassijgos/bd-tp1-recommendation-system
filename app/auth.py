@@ -90,3 +90,40 @@ def authenticate_user(email, password):
         }
 
     return None
+
+
+def update_profile_picture(user_id, image_path):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE users
+        SET profile_picture = ?
+        WHERE id = ?
+    """, (image_path, user_id))
+
+    conn.commit()
+    conn.close()
+
+
+def update_user_info(user_id, first_name, last_name, birth_date, gender):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE users
+        SET first_name = ?,
+            last_name = ?,
+            birth_date = ?,
+            gender = ?
+        WHERE id = ?
+    """, (
+        first_name.strip() if first_name else None,
+        last_name.strip() if last_name else None,
+        birth_date.strip() if birth_date else None,
+        gender if gender else None,
+        user_id
+    ))
+
+    conn.commit()
+    conn.close()
