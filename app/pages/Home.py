@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import sqlite3
 from recommender import *
 from tmdb import get_movie_poster
@@ -13,7 +12,7 @@ DB_PATH = "app.db"
 st.markdown("""
 <style>
 
-/* GRID RESPONSIVE */
+/* GRID */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -23,15 +22,15 @@ st.markdown("""
 /* SCROLL */
 .scroll-container {
     display: flex;
+    flex-wrap: nowrap;
     overflow-x: auto;
     gap: 12px;
-    padding: 10px 0;
+    padding-bottom: 10px;
 }
 
 .scroll-item {
-    min-width: 90px;
-    max-width: 90px;
-    flex-shrink: 0;
+    width: 90px;
+    flex: 0 0 auto;
 }
 
 /* CARD */
@@ -43,6 +42,7 @@ st.markdown("""
 .movie-card img {
     width: 100%;
     border-radius: 10px;
+    display: block;
 }
 
 /* TITLE */
@@ -52,6 +52,11 @@ st.markdown("""
     height: 2.4em;
     overflow: hidden;
     margin-top: 4px;
+}
+
+/* REMOVE vertical scroll glitch */
+section.main > div {
+    overflow: visible !important;
 }
 
 </style>
@@ -109,7 +114,7 @@ def render_grid(movies):
 
     html += "</div>"
 
-    components.html(html, height=800, scrolling=True)
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ---------- SCROLL ----------
@@ -124,7 +129,7 @@ def render_scroll(movies):
 
     html += "</div>"
 
-    components.html(html, height=250, scrolling=True)
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ---------- LOAD ----------
