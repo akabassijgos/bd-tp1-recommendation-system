@@ -1,15 +1,33 @@
 import streamlit as st
 import sqlite3
-from recommender import *
-from tmdb import get_movie_poster
-from utils import extract_genres
+import pandas as pd
 
+from recommender import (
+    load_data,
+    build_sparse_matrix,
+    compute_item_similarity,
+    recommend_items,
+    get_popular_movies
+)
+
+from tmdb import get_movie_poster
+
+# ---------------- CONFIG ----------------
 st.set_page_config(layout="wide")
 
 DB_PATH = "app.db"
+PAGE_SIZE = 20
 
 
-# ---------------- CSS ---------------
+# ---------------- STATE ----------------
+if "page" not in st.session_state:
+    st.session_state.page = 0
+
+if "last_query" not in st.session_state:
+    st.session_state.last_query = ""
+
+
+# ---------------- CSS (SAFE) ----------------
 st.markdown("""
 <style>
 
@@ -29,38 +47,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ---------------- CARD ----------------
-def render_card(movie):
-    poster = get_movie_poster(movie.get("tmdb_id"))
-    title = movie.get("title", "Unknown")
-
-    if poster:
-        st.image(poster, use_container_width=True)
-    else:
-        st.write("")
-
-    st.caption(title)
-
-
-# ---------------- GRID STABLE ----------------
-def render_grid(movies):
-    if movies.empty:
-        st.info("Aucun film trouvé")
-        return
-
-    cols_per_row = 6
-
-    for i in range(0, len(movies), cols_per_row):
-        row = movies.iloc[i:i + cols_per_row]
-        cols = st.columns(cols_per_row)
-
-        for col, (_, movie) in zip(cols, row.iterrows()):
-            with col:
-                render_card(movie)
-
-
-# ---------------- DATA ----------------
+# ---------------- DATA LOAD ----------------
 ratings, movies = load_data()
+
 user = st.session_state.get("user")
 
 if not user:
@@ -68,21 +57,36 @@ if not user:
     st.stop()
 
 
-# ---------------- SEARCH / FILTER ----------------
-st.title("Accueil")
+# ---------------- CARD ----------------
+def render_card(movie):
+    poster = get_movie_poster(movie.get("tmdb_id"))
+    title = movie.get("title", "Unknown")
 
-col1, col2 = st.columns([3, 1])
+    if poster:
+        st.image(poster, use_container_width=True)
 
-with col1:
-    search_query = st.text_input("Rechercher un film")
-
-with col2:
-    genres = extract_genres(movies)
-    selected_genre = st.selectbox("Genre", ["Tous"] + genres)
+    st.caption(title)
 
 
-# DB search (important)
-def search_movies(query, genre):
+# ---------------- GRID ----------------
+def render_grid(df):
+    if df.empty:
+        st.info("Aucun résultat")
+        return
+
+    cols_per_row = 6
+
+    for i in range(0, len(df), cols_per_row):
+        row = df.iloc[i:i + cols_per_row]
+        cols = st.columns(cols_per_row)
+
+        for col, (_, movie) in zip(cols, row.iterrows()):
+            with col:
+                render_card(movie)
+
+
+# ---------------- SEARCH FUNCTION ----------------
+def search_movies(query, genre, limit, offset):
     conn = sqlite3.connect(DB_PATH)
 
     sql = "SELECT * FROM movies WHERE 1=1"
@@ -96,7 +100,8 @@ def search_movies(query, genre):
         sql += " AND genres LIKE ?"
         params.append(f"%{genre}%")
 
-    sql += " LIMIT 60"
+    sql += " LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
 
     df = pd.read_sql(sql, conn, params=params)
     conn.close()
@@ -104,37 +109,85 @@ def search_movies(query, genre):
     return df
 
 
-search_results = search_movies(search_query, selected_genre)
+# ---------------- UI HEADER ----------------
+st.title("🎬 MovieLens Recommender")
 
 
-# ---------------- PERSONNALISÉ ----------------
-user_ratings = ratings[ratings["user_id"] == user["id"]]
+# ---------------- SEARCH UI ----------------
+col1, col2 = st.columns([3, 1])
 
-if len(user_ratings) >= 5:
-    st.subheader("Recommandés pour vous")
+with col1:
+    search_query = st.text_input("Rechercher un film")
 
-    matrix, user_map, movie_map = build_sparse_matrix(ratings)
-    sim = compute_item_similarity(matrix)
-
-    rec_ids = recommend_items(
-        user["id"], ratings, matrix, user_map, movie_map, sim, 20
-    )
-
-    recs_personal = movies[movies["id"].isin(rec_ids)]
-
-    render_grid(recs_personal)
+with col2:
+    genres = movies["genres"].dropna().unique().tolist()
+    selected_genre = st.selectbox("Genre", ["Tous"] + genres)
 
 
-# ---------------- POPULAIRES ----------------
-st.subheader("Films populaires")
+# ---------------- RESET PAGINATION ----------------
+current_query = f"{search_query}-{selected_genre}"
 
-recs_pop = get_popular_movies(30)
+if current_query != st.session_state.last_query:
+    st.session_state.page = 0
+    st.session_state.last_query = current_query
 
-render_grid(recs_pop)
+
+search_active = search_query.strip() != "" or selected_genre != "Tous"
 
 
-# ---------------- SEARCH ----------------
-if search_query or selected_genre != "Tous":
+# =====================================================
+# MODE 1 : SEARCH MODE (FULL RESULTS ONLY)
+# =====================================================
+if search_active:
+
     st.subheader("Résultats")
 
-    render_grid(search_results)
+    offset = st.session_state.page * PAGE_SIZE
+
+    results = search_movies(
+        search_query,
+        selected_genre,
+        PAGE_SIZE,
+        offset
+    )
+
+    render_grid(results)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        if st.button("Charger plus"):
+            st.session_state.page += 1
+            st.rerun()
+
+
+# =====================================================
+# MODE 2 : HOME MODE (RECO + POPULAR)
+# =====================================================
+else:
+
+    user_ratings = ratings[ratings["user_id"] == user["id"]]
+
+    if len(user_ratings) >= 5:
+        st.subheader("Recommandés pour vous")
+
+        matrix, user_map, movie_map = build_sparse_matrix(ratings)
+        sim = compute_item_similarity(matrix)
+
+        rec_ids = recommend_items(
+            user["id"],
+            ratings,
+            matrix,
+            user_map,
+            movie_map,
+            sim,
+            20
+        )
+
+        recs_personal = movies[movies["id"].isin(rec_ids)]
+        render_grid(recs_personal)
+
+    st.subheader("Films populaires")
+
+    recs_pop = get_popular_movies(30)
+    render_grid(recs_pop)
