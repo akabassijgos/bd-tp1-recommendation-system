@@ -38,7 +38,6 @@ def build_sparse_matrix(ratings):
     return sparse_matrix, user_map, movie_map
 
 
-@st.cache_data
 def compute_item_similarity(sparse_matrix):
     item_matrix = sparse_matrix.T
     similarity = cosine_similarity(item_matrix, dense_output=False)
