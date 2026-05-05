@@ -71,3 +71,30 @@ def recommend_items(user_id, ratings, sparse_matrix, user_map, movie_map, simila
             break
 
     return [movie_id for movie_id, _ in recommendations]
+
+
+def get_popular_movies(limit=10):
+    conn = sqlite3.connect(DB_PATH)
+
+    query = """
+        SELECT m.id, m.title, AVG(r.rating) as avg_rating, COUNT(r.rating) as count
+        FROM movies m
+        JOIN ratings r ON m.id = r.movie_id
+        GROUP BY m.id
+        HAVING COUNT(r.rating) > 20
+        ORDER BY avg_rating DESC, count DESC
+        LIMIT ?
+    """
+
+    df = pd.read_sql(query, conn, params=(limit,))
+    conn.close()
+
+    return df
+
+
+def get_recommendation_mode(user_id, ratings_df):
+    user_ratings = ratings_df[ratings_df["user_id"] == user_id]
+
+    if len(user_ratings) < 5:
+        return "popular"
+    return "personalized"
