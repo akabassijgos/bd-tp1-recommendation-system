@@ -71,6 +71,46 @@ def get_user_history(user_id):
     return df
 
 
+def compute_taste_profile(user_id):
+    conn = sqlite3.connect(DB_PATH)
+
+    df = pd.read_sql("""
+        SELECT r.rating, m.genres
+        FROM ratings r
+        JOIN movies m ON r.movie_id = m.id
+        WHERE r.user_id = ?
+    """, conn, params=(user_id,))
+
+    conn.close()
+
+    if df.empty:
+        return pd.DataFrame()
+
+    rows = []
+
+    for _, row in df.iterrows():
+        genres = row["genres"].split("|")
+        for g in genres:
+            rows.append({
+                "genre": g.strip(),
+                "rating": row["rating"]
+            })
+
+    genre_df = pd.DataFrame(rows)
+
+    if genre_df.empty:
+        return pd.DataFrame()
+
+    summary = genre_df.groupby("genre").agg(
+        avg_rating=("rating", "mean"),
+        count=("rating", "count")
+    ).reset_index()
+
+    summary = summary.sort_values("avg_rating", ascending=False)
+
+    return summary
+
+
 # ---------------- UI HEADER ----------------
 st.title("Mon profil")
 
@@ -146,6 +186,27 @@ c1, c2 = st.columns(2)
 
 c1.metric("Films notés", count)
 c2.metric("Note moyenne", round(avg, 2) if count > 0 else "N/A")
+
+
+# ---------------- TASTE PROFILE ----------------
+st.markdown("### 🍿 Taste Profile")
+
+taste = compute_taste_profile(user_id)
+
+if taste.empty:
+    st.info("Pas assez de données pour analyser vos goûts")
+else:
+    top = taste.head(5)
+
+    st.write("Genres préférés :")
+
+    st.bar_chart(
+        top.set_index("genre")["avg_rating"]
+    )
+
+    fav_genres = ", ".join(top["genre"].tolist())
+
+    st.success(f"Vous aimez principalement : {fav_genres}")
 
 
 # ---------------- HISTORY ----------------
