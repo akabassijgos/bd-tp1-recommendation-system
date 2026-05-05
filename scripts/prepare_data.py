@@ -16,8 +16,8 @@ movies["tmdbId"] = movies["tmdbId"].astype(int)
 movies["year"] = movies["title"].str.extract(r"\((\d{4})\)")
 movies["year"] = pd.to_numeric(movies["year"], errors="coerce")
 
-# Clean genres
-movies["genres"] = movies["genres"].apply(lambda x: x.split("|"))
+# Remove year from title
+movies["title"] = movies["title"].str.replace(r"\s*\(\d{4}\)", "", regex=True)
 
 # Keep useful columns
 movies_clean = movies[[
