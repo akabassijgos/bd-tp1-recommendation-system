@@ -46,6 +46,17 @@ st.markdown("""
     border-radius: 10px;
 }
 
+.center-btn {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.center-btn button {
+    width: 200px;
+    border-radius: 10px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -176,9 +187,13 @@ if search_active:
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
+        st.markdown('<div class="center-btn">', unsafe_allow_html=True)
+
         if st.button("Charger plus"):
             st.session_state.page += 1
             st.rerun()
+
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =====================================================
