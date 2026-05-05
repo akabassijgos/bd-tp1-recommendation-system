@@ -50,14 +50,31 @@ st.markdown("""
     border-radius: 10px;
 }
 
-section[data-testid="stSidebar"] {
-    z-index: 0;
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.modal-container {
-    background-color: rgba(0,0,0,0.85);
+.modal-content {
+    background: #111;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
+    width: 70%;
+    max-height: 90%;
+    overflow-y: auto;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
 }
 
 </style>
@@ -276,25 +293,33 @@ def render_movie_modal():
     if not movie:
         return
 
-    st.markdown("---")
+    poster = get_movie_poster(movie.get("tmdb_id"))
+    title = movie.get("title", "Unknown")
+    genres = movie.get("genres", "")
+
+    # overlay start
+    st.markdown('<div class="modal-overlay">', unsafe_allow_html=True)
+    st.markdown('<div class="modal-content">', unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        poster = get_movie_poster(movie.get("tmdb_id"))
         if poster:
             st.image(poster, use_container_width=True)
 
     with col2:
-        st.title(movie.get("title"))
+        st.markdown(f"<div class='modal-title'>{title}</div>", unsafe_allow_html=True)
+        st.write("Genres :", genres)
 
-        st.write("Genres :", movie.get("genres", "N/A"))
-
-        # 👉 rating widget dans modal
         render_rating_widget(movie, st.session_state.user, source="modal")
 
-        if st.button("Fermer"):
+        if st.button("Fermer", key="close_modal"):
             st.session_state.selected_movie = None
             st.rerun()
+
+    # overlay end
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 render_movie_modal()
