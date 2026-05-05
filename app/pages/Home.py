@@ -88,6 +88,7 @@ def render_rating_widget(movie, user):
 
     if new_rating != current_rating:
         rate_movie(user["id"], movie_id, new_rating)
+        load_data.clear()
 
 
 # ---------------- GRID ----------------
@@ -186,9 +187,12 @@ if search_active:
     if st.session_state.page == 0:
         st.session_state.results = new_results
     else:
-        st.session_state.results = pd.concat(
-            [st.session_state.results, new_results]
-        ).drop_duplicates(subset="id")
+        st.session_state.results = (
+            pd.concat([st.session_state.results, new_results])
+            .drop_duplicates(subset="id")
+            .sort_values("id")
+            .reset_index(drop=True)
+        )
 
     render_grid(st.session_state.results)
 
@@ -222,6 +226,7 @@ else:
         )
 
         recs_personal = movies[movies["id"].isin(rec_ids)]
+        recs_personal = recs_personal.sort_values("id").reset_index(drop=True)
         render_grid(recs_personal)
 
     st.subheader("Films populaires")
