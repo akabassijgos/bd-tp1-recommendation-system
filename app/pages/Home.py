@@ -91,14 +91,12 @@ def render_card(movie):
     poster = get_movie_poster(movie.get("tmdb_id"))
     title = movie.get("title", "Unknown")
 
-    img = f"<img src='{poster}'/>" if poster else ""
+    if poster:
+        st.image(poster, use_container_width=True)
+    else:
+        st.write("")
 
-    return f"""
-    <div class="movie-card">
-        {img}
-        <div class="movie-title">{title}</div>
-    </div>
-    """
+    st.caption(title)
 
 
 # ---------- GRID ----------
@@ -107,19 +105,16 @@ def render_grid(movies):
         st.info("Aucun film trouvé")
         return
 
-    chunk_size = 1  # CRITIQUE (ne pas dépasser ~15)
+    cols_per_row = 6
 
-    for i in range(0, len(movies), chunk_size):
-        chunk = movies.iloc[i:i + chunk_size]
+    for i in range(0, len(movies), cols_per_row):
+        row = movies.iloc[i:i + cols_per_row]
 
-        html = '<div class="grid-container">'
+        cols = st.columns(cols_per_row)
 
-        for _, movie in chunk.iterrows():
-            html += render_card(movie)
-
-        html += "</div>"
-
-        st.markdown(html, unsafe_allow_html=True)
+        for col, (_, movie) in zip(cols, row.iterrows()):
+            with col:
+                render_card(movie)
 
 
 # ---------- SCROLL ----------
@@ -127,14 +122,11 @@ def render_scroll(movies):
     if movies.empty:
         return
 
-    html = '<div class="scroll-container">'
+    cols = st.columns(len(movies))
 
-    for _, movie in movies.iterrows():
-        html += f'<div class="scroll-item">{render_card(movie)}</div>'
-
-    html += "</div>"
-
-    st.markdown(html, unsafe_allow_html=True)
+    for col, (_, movie) in zip(cols, movies.iterrows()):
+        with col:
+            render_card(movie)
 
 
 # ---------- LOAD ----------
