@@ -1,10 +1,19 @@
+import re
 import sqlite3
 import bcrypt
 
 DB_PATH = "app.db"
 
 
+def is_valid_email(email):
+    pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+    return re.match(pattern, email) is not None
+
+
 def create_user(email, password, first_name="", last_name=""):
+    if not is_valid_email(email):
+        raise ValueError("Invalid email format")
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 

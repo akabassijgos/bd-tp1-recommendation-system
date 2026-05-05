@@ -15,10 +15,17 @@ def movie_card(movie, show_title=True):
 
 
 def horizontal_scroll(movies, title):
-    st.subheader(title)
+    if movies.empty:
+        st.info("Aucun film trouvé")
+        return
 
-    cols = st.columns(len(movies))
+    st.markdown(f"### {title}")
 
-    for col, (_, movie) in zip(cols, movies.iterrows()):
-        with col:
-            movie_card(movie)
+    container = st.container()
+
+    with container:
+        cols = st.columns(min(len(movies), 10))
+
+        for i, (_, movie) in enumerate(movies.iterrows()):
+            with cols[i % len(cols)]:
+                movie_card(movie)
