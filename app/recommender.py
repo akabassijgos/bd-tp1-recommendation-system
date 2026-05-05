@@ -80,7 +80,13 @@ def get_popular_movies(limit=10):
     conn = sqlite3.connect(DB_PATH)
 
     query = """
-        SELECT m.id, m.title, AVG(r.rating) as avg_rating, COUNT(r.rating) as count
+        SELECT 
+            m.id,
+            m.title,
+            m.genres,
+            m.tmdb_id,
+            AVG(r.rating) as avg_rating,
+            COUNT(r.rating) as count
         FROM movies m
         JOIN ratings r ON m.id = r.movie_id
         GROUP BY m.id

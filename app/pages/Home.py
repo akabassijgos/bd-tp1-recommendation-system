@@ -193,7 +193,6 @@ if len(user_ratings) >= 5:
 st.markdown("## Films populaires")
 
 recs_pop = get_popular_movies(30)
-recs_pop = recs_pop.merge(movies, on="id")
 
 if view_mode == "Scroll":
     render_scroll(recs_pop)
