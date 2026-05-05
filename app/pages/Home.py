@@ -81,7 +81,7 @@ def render_rating_widget(movie, user, source="global"):
     display_value = current_rating if current_rating is not None else 0.5
 
     new_rating = st.slider(
-        "Votre note",
+        "_Votre note_" if current_rating else "_Pas encore noté_",
         0.5,
         5.0,
         float(display_value),
