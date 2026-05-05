@@ -1,6 +1,7 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+from streamlit_modal import Modal
 
 from recommender import (
     load_data,
@@ -23,6 +24,12 @@ PAGE_SIZE = 20
 # ---------------- STATE ----------------
 if "selected_movie" not in st.session_state:
     st.session_state.selected_movie = None
+
+modal = Modal(
+    "🎬 Détails du film",
+    key="movie_modal",
+    max_width=800
+)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
 if "page" not in st.session_state:
     st.session_state.page = 0
@@ -50,33 +57,6 @@ st.markdown("""
     border-radius: 10px;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: #111;
-    padding: 20px;
-    border-radius: 12px;
-    width: 70%;
-    max-height: 90%;
-    overflow-y: auto;
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,7 +82,7 @@ def render_card(movie, source="global"):
 
     if st.button("Voir", key=f"view_{source}_{movie['id']}"):
         st.session_state.selected_movie = movie.to_dict()
-        st.rerun()
+        modal.open()
 
     st.caption(title)
 
@@ -287,39 +267,26 @@ else:
 # =====================================================
 # MODAL
 # =====================================================
-def render_movie_modal():
+def render_modal_content():
     movie = st.session_state.selected_movie
 
     if not movie:
         return
 
-    poster = get_movie_poster(movie.get("tmdb_id"))
-    title = movie.get("title", "Unknown")
-    genres = movie.get("genres", "")
-
-    # overlay start
-    st.markdown('<div class="modal-overlay">', unsafe_allow_html=True)
-    st.markdown('<div class="modal-content">', unsafe_allow_html=True)
-
     col1, col2 = st.columns([1, 2])
 
     with col1:
+        poster = get_movie_poster(movie.get("tmdb_id"))
         if poster:
             st.image(poster, use_container_width=True)
 
     with col2:
-        st.markdown(f"<div class='modal-title'>{title}</div>", unsafe_allow_html=True)
-        st.write("Genres :", genres)
+        st.title(movie.get("title", "Unknown"))
+        st.write("Genres :", movie.get("genres", ""))
 
         render_rating_widget(movie, st.session_state.user, source="modal")
 
-        if st.button("Fermer", key="close_modal"):
-            st.session_state.selected_movie = None
-            st.rerun()
 
-    # overlay end
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-render_movie_modal()
+if modal.is_open():
+    with modal.container():
+        render_modal_content()
