@@ -1,2 +1,81 @@
-# Database
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environnements virtuels
+venv/
+env/
+ENV/
+.venv/
+
+# =========================
+# Jupyter / notebooks
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Streamlit
+# =========================
+.streamlit/
+.streamlit/secrets.toml
+
+# =========================
+# SQLite
+# =========================
+*.sqlite
+*.sqlite3
 *.db
+*.db-journal
+
+# =========================
+# Machine Learning / scikit-learn
+# =========================
+*.joblib
+*.pkl
+*.pickle
+models/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# IDE / éditeurs
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Tests / coverage
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# =========================
+# Cache divers
+# =========================
+.cache/
+.mypy_cache/
+.ruff_cache/
