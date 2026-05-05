@@ -33,15 +33,14 @@ def rate_movie(user_id, movie_id, rating):
     if existing:
         cursor.execute("""
             UPDATE ratings
-            SET rating = ?, timestamp = strftime('%s','now')
+            SET rating = ?, created_at = strftime('%s','now')
             WHERE user_id = ? AND movie_id = ?
         """, (rating, user_id, movie_id))
     else:
         cursor.execute("""
-            INSERT INTO ratings (user_id, movie_id, rating, timestamp)
+            INSERT INTO ratings (user_id, movie_id, rating, created_at)
             VALUES (?, ?, ?, strftime('%s','now'))
         """, (user_id, movie_id, rating))
 
     conn.commit()
     conn.close()
-    
