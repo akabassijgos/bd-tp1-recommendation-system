@@ -21,6 +21,9 @@ PAGE_SIZE = 20
 
 
 # ---------------- STATE ----------------
+if "selected_movie" not in st.session_state:
+    st.session_state.selected_movie = None
+
 if "page" not in st.session_state:
     st.session_state.page = 0
 
@@ -47,6 +50,16 @@ st.markdown("""
     border-radius: 10px;
 }
 
+section[data-testid="stSidebar"] {
+    z-index: 0;
+}
+
+.modal-container {
+    background-color: rgba(0,0,0,0.85);
+    padding: 20px;
+    border-radius: 10px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -62,12 +75,17 @@ if not user:
 
 
 # ---------------- CARD ----------------
-def render_card(movie):
+def render_card(movie, source="global"):
     poster = get_movie_poster(movie.get("tmdb_id"))
     title = movie.get("title", "Unknown")
 
     if poster:
-        st.image(poster, use_container_width=True)
+        if st.image(poster, use_container_width=True):
+            pass
+
+    if st.button("Voir", key=f"view_{source}_{movie['id']}"):
+        st.session_state.selected_movie = movie.to_dict()
+        st.rerun()
 
     st.caption(title)
 
@@ -120,7 +138,7 @@ def render_grid(df, source):
         for col, (_, movie) in zip(cols, row.iterrows()):
             with col:
                 with st.container():
-                    render_card(movie)
+                    render_card(movie, source)
                     render_rating_widget(movie, st.session_state.user, source)
 
 
@@ -247,3 +265,36 @@ else:
 
     recs_pop = get_popular_movies(30)
     render_grid(recs_pop, source="popular")
+
+
+# =====================================================
+# MODAL
+# =====================================================
+def render_movie_modal():
+    movie = st.session_state.selected_movie
+
+    if not movie:
+        return
+
+    st.markdown("---")
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        poster = get_movie_poster(movie.get("tmdb_id"))
+        if poster:
+            st.image(poster, use_container_width=True)
+
+    with col2:
+        st.title(movie.get("title"))
+
+        st.write("Genres :", movie.get("genres", "N/A"))
+
+        # 👉 rating widget dans modal
+        render_rating_widget(movie, st.session_state.user, source="modal")
+
+        if st.button("Fermer"):
+            st.session_state.selected_movie = None
+            st.rerun()
+
+render_movie_modal()
