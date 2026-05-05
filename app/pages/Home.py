@@ -72,7 +72,7 @@ def render_card(movie):
     st.caption(title)
 
 
-def render_rating_widget(movie, user):
+def render_rating_widget(movie, user, source="global"):
     movie_id = movie["id"]
 
     current_rating = get_user_rating(user["id"], movie_id)
@@ -86,7 +86,7 @@ def render_rating_widget(movie, user):
         5.0,
         float(display_value),
         step=0.5,
-        key=f"rating_{movie_id}"
+        key=f"rating_{source}_{movie_id}"
     )
 
     # éviter les écritures automatiques au premier rendu
@@ -106,7 +106,7 @@ def render_rating_widget(movie, user):
 
 
 # ---------------- GRID ----------------
-def render_grid(df):
+def render_grid(df, source):
     if df.empty:
         st.info("Aucun résultat")
         return
@@ -121,7 +121,7 @@ def render_grid(df):
             with col:
                 with st.container():
                     render_card(movie)
-                    render_rating_widget(movie, st.session_state.user)
+                    render_rating_widget(movie, st.session_state.user, source)
 
 
 # ---------------- SEARCH FUNCTION ----------------
@@ -208,7 +208,7 @@ if search_active:
             .reset_index(drop=True)
         )
 
-    render_grid(st.session_state.results)
+    render_grid(st.session_state.results, source="search")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -241,9 +241,9 @@ else:
 
         recs_personal = movies[movies["id"].isin(rec_ids)]
         recs_personal = recs_personal.sort_values("id").reset_index(drop=True)
-        render_grid(recs_personal)
+        render_grid(recs_personal, source="reco")
 
     st.subheader("Films populaires")
 
     recs_pop = get_popular_movies(30)
-    render_grid(recs_pop)
+    render_grid(recs_pop, source="popular")
