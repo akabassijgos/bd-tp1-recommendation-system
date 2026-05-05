@@ -26,6 +26,9 @@ if "page" not in st.session_state:
 if "last_query" not in st.session_state:
     st.session_state.last_query = ""
 
+if "results" not in st.session_state:
+    st.session_state.results = pd.DataFrame()
+
 
 # ---------------- CSS (SAFE) ----------------
 st.markdown("""
@@ -120,7 +123,15 @@ with col1:
     search_query = st.text_input("Rechercher un film")
 
 with col2:
-    genres = movies["genres"].dropna().unique().tolist()
+    def extract_genres(df):
+        all_genres = set()
+
+        for g in df["genres"].dropna():
+            for genre in g.split("|"):
+                all_genres.add(genre.strip())
+
+        return sorted(all_genres)
+    genres = extract_genres(movies)
     selected_genre = st.selectbox("Genre", ["Tous"] + genres)
 
 
@@ -144,14 +155,23 @@ if search_active:
 
     offset = st.session_state.page * PAGE_SIZE
 
-    results = search_movies(
+    new_results = search_movies(
         search_query,
         selected_genre,
         PAGE_SIZE,
-        offset
+        st.session_state.page * PAGE_SIZE
     )
 
-    render_grid(results)
+    if st.session_state.page == 0:
+        st.session_state.results = new_results
+    else:
+        st.session_state.results = pd.concat(
+            [st.session_state.results, new_results]
+        ).drop_duplicates(subset="id")
+
+    render_grid(st.session_state.results)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
 
