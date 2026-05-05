@@ -11,6 +11,7 @@ from recommender import (
 )
 
 from tmdb import get_movie_poster
+from ratings import get_user_rating, rate_movie
 
 # ---------------- CONFIG ----------------
 st.set_page_config(layout="wide")
@@ -71,6 +72,24 @@ def render_card(movie):
     st.caption(title)
 
 
+def render_rating_widget(movie, user):
+    movie_id = movie["id"]
+
+    current_rating = get_user_rating(user["id"], movie_id) or 0
+
+    new_rating = st.slider(
+        "Votre note",
+        0.5,
+        5.0,
+        float(current_rating) if current_rating else 0.5,
+        step=0.5,
+        key=f"rating_{movie_id}"
+    )
+
+    if new_rating != current_rating:
+        rate_movie(user["id"], movie_id, new_rating)
+
+
 # ---------------- GRID ----------------
 def render_grid(df):
     if df.empty:
@@ -85,7 +104,9 @@ def render_grid(df):
 
         for col, (_, movie) in zip(cols, row.iterrows()):
             with col:
-                render_card(movie)
+                with st.container():
+                    render_card(movie)
+                    render_rating_widget(movie, st.session_state.user)
 
 
 # ---------------- SEARCH FUNCTION ----------------
