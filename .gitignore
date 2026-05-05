@@ -79,3 +79,8 @@ htmlcov/
 .cache/
 .mypy_cache/
 .ruff_cache/
+
+# =========================
+# Configs
+# =========================
+.env
