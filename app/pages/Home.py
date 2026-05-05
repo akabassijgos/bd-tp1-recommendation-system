@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import sqlite3
 from recommender import *
 from tmdb import get_movie_poster
@@ -15,57 +16,42 @@ st.markdown("""
 /* GRID RESPONSIVE */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 16px;
 }
 
-/* SCROLL HORIZONTAL */
+/* SCROLL */
 .scroll-container {
     display: flex;
     overflow-x: auto;
-    gap: 16px;
-    padding-bottom: 10px;
+    gap: 12px;
+    padding: 10px 0;
 }
 
 .scroll-item {
     min-width: 90px;
+    max-width: 90px;
     flex-shrink: 0;
 }
 
 /* CARD */
 .movie-card {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
 }
 
 /* IMAGE */
 .movie-card img {
-    border-radius: 10px;
     width: 100%;
-    height: auto;
-}
-
-.movie-card img:hover {
-    transform: scale(1.05);
-}
-
-/* TITLE FIXED HEIGHT */
-.movie-title {
-    margin-top: 4px;
-    font-size: 0.7rem;
-    line-height: 1.1em;
-    height: 2.2em;
-    overflow: hidden;
-}
-
-/* SCROLLBAR CLEAN */
-.scroll-container::-webkit-scrollbar {
-    height: 6px;
-}
-
-.scroll-container::-webkit-scrollbar-thumb {
-    background: #888;
     border-radius: 10px;
+}
+
+/* TITLE */
+.movie-title {
+    font-size: 0.7rem;
+    line-height: 1.2em;
+    height: 2.4em;
+    overflow: hidden;
+    margin-top: 4px;
 }
 
 </style>
@@ -100,11 +86,11 @@ def render_card(movie):
     poster = get_movie_poster(movie.get("tmdb_id"))
     title = movie.get("title", "Unknown")
 
-    img_html = f"<img src='{poster}'/>" if poster else ""
+    img = f"<img src='{poster}'/>" if poster else ""
 
     return f"""
     <div class="movie-card">
-        {img_html}
+        {img}
         <div class="movie-title">{title}</div>
     </div>
     """
@@ -116,12 +102,14 @@ def render_grid(movies):
         st.info("Aucun film trouvé")
         return
 
-    st.markdown('<div class="grid-container">', unsafe_allow_html=True)
+    html = '<div class="grid-container">'
 
     for _, movie in movies.iterrows():
-        st.markdown(render_card(movie), unsafe_allow_html=True)
+        html += render_card(movie)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    html += "</div>"
+
+    components.html(html, height=800, scrolling=True)
 
 
 # ---------- SCROLL ----------
@@ -130,11 +118,13 @@ def render_scroll(movies):
         return
 
     html = '<div class="scroll-container">'
+
     for _, movie in movies.iterrows():
         html += f'<div class="scroll-item">{render_card(movie)}</div>'
+
     html += "</div>"
 
-    st.markdown(html, unsafe_allow_html=True)
+    components.html(html, height=250, scrolling=True)
 
 
 # ---------- LOAD ----------
