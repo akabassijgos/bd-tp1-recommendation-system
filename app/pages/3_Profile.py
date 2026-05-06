@@ -235,7 +235,7 @@ else:
             poster = get_movie_poster(row.tmdb_id) if row.tmdb_id else None
 
             if poster:
-                st.image(poster, use_container_width=True)
+                st.image(poster, width="stretch")
             else:
                 st.warning("Image non disponible")
 
