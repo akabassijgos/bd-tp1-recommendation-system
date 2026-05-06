@@ -9,9 +9,19 @@ from ratings import get_user_rating
 from tmdb import get_movie_poster
 from recommender import load_data
 
+
+# ---------------- MENU ----------------
+with st.sidebar:
+    if st.button("Logout"):
+        st.session_state.user = None
+        st.switch_page("pages/0_Login.py")
+
+
+# ---------------- CONFIG ----------------
 DB_PATH = "app.db"
 
 st.set_page_config(layout="wide")
+
 
 # ---------------- LOAD USER ----------------
 if "user" not in st.session_state or st.session_state.user is None:

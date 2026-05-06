@@ -14,6 +14,14 @@ from recommender import (
 from tmdb import get_movie_poster, get_movie_details, get_movie_trailer
 from ratings import get_user_rating, rate_movie
 
+
+# ---------------- MENU ----------------
+with st.sidebar:
+    if st.button("Logout"):
+        st.session_state.user = None
+        st.switch_page("pages/0_Login.py")
+
+
 # ---------------- CONFIG ----------------
 st.set_page_config(layout="wide")
 
