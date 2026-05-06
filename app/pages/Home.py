@@ -11,7 +11,7 @@ from recommender import (
     get_popular_movies
 )
 
-from tmdb import get_movie_poster
+from tmdb import get_movie_poster, get_movie_details, get_movie_trailer
 from ratings import get_user_rating, rate_movie
 
 # ---------------- CONFIG ----------------
@@ -273,16 +273,32 @@ def render_modal_content():
     if not movie:
         return
 
+    tmdb_id = movie.get("tmdb_id")
+
+    details = get_movie_details(tmdb_id)
+    trailer = get_movie_trailer(tmdb_id)
+
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        poster = get_movie_poster(movie.get("tmdb_id"))
+        poster = get_movie_poster(tmdb_id)
         if poster:
             st.image(poster, use_container_width=True)
 
     with col2:
         st.title(movie.get("title", "Unknown"))
         st.write("Genres :", movie.get("genres", ""))
+        st.write("Année de sortie :", int(movie.get("year", 0)))
+
+        # Synopsis
+        if details and details.get("overview"):
+            st.markdown("### Synopsis")
+            st.write(details["overview"])
+
+        # Trailer
+        if trailer:
+            st.markdown("### Bande annonce")
+            st.video(trailer)
 
         render_rating_widget(movie, st.session_state.user, source="modal")
 

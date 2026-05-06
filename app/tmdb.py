@@ -30,3 +30,41 @@ def get_movie_poster(tmdb_id):
         return None
 
     return None
+
+
+@st.cache_data
+def get_movie_details(tmdb_id):
+    if not tmdb_id:
+        return None
+
+    url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+    params = {"api_key": API_KEY, "language": "fr-FR"}
+
+    res = requests.get(url, params=params, timeout=10)
+
+    if res.status_code != 200:
+        return None
+
+    return res.json()
+
+
+@st.cache_data
+def get_movie_trailer(tmdb_id):
+    if not tmdb_id:
+        return None
+
+    url = f"https://api.themoviedb.org/3/movie/{tmdb_id}/videos"
+    params = {"api_key": API_KEY}
+
+    res = requests.get(url, params=params, timeout=10)
+
+    if res.status_code != 200:
+        return None
+
+    data = res.json()
+
+    for video in data.get("results", []):
+        if video["type"] == "Trailer" and video["site"] == "YouTube":
+            return f"https://www.youtube.com/watch?v={video['key']}"
+
+    return None

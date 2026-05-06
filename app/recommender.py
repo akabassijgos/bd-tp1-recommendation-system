@@ -14,7 +14,7 @@ def load_data():
 
     ratings = pd.read_sql("SELECT user_id, movie_id, rating FROM ratings", conn)
     movies = pd.read_sql("""
-        SELECT id, title, genres, tmdb_id
+        SELECT id, title, genres, tmdb_id, year
         FROM movies
     """, conn)
 
@@ -85,6 +85,7 @@ def get_popular_movies(limit=10):
             m.title,
             m.genres,
             m.tmdb_id,
+            m.year as year,
             AVG(r.rating) as avg_rating,
             COUNT(r.rating) as count
         FROM movies m
