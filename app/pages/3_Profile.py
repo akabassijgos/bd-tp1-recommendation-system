@@ -75,7 +75,7 @@ def get_user_history(user_id):
         JOIN movies m ON r.movie_id = m.id
         WHERE r.user_id = ?
         ORDER BY r.created_at DESC
-        LIMIT 12
+        LIMIT 20
     """, conn, params=(user_id,))
 
     conn.close()
