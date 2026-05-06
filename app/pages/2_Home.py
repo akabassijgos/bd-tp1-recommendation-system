@@ -135,7 +135,7 @@ def render_grid(df, source):
         st.info("Aucun résultat")
         return
 
-    cols_per_row = 6
+    cols_per_row = 5
 
     for i in range(0, len(df), cols_per_row):
         row = df.iloc[i:i + cols_per_row]
@@ -259,7 +259,7 @@ else:
             user_map,
             movie_map,
             sim,
-            20
+            30
         )
 
         recs_personal = movies[movies["id"].isin(rec_ids)]
