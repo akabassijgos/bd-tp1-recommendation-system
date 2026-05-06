@@ -80,11 +80,12 @@ def render_card(movie, source="global"):
         if st.image(poster, use_container_width=True):
             pass
 
-    if st.button("Voir", key=f"view_{source}_{movie['id']}"):
+    st.caption(title)
+    render_rating_widget(movie, st.session_state.user, source)
+
+    if st.button("Voir les détails", key=f"view_{source}_{movie['id']}"):
         st.session_state.selected_movie = movie.to_dict()
         modal.open()
-
-    st.caption(title)
 
 
 def render_rating_widget(movie, user, source="global"):
@@ -136,7 +137,6 @@ def render_grid(df, source):
             with col:
                 with st.container():
                     render_card(movie, source)
-                    render_rating_widget(movie, st.session_state.user, source)
 
 
 # ---------------- SEARCH FUNCTION ----------------
@@ -287,7 +287,7 @@ def render_modal_content():
 
     with col2:
         st.title(movie.get("title", "Unknown"))
-        st.write("Genres :", movie.get("genres", ""))
+        st.write("Genres :", movie.get("genres", "").replace("|", " - "))
         st.write("Année de sortie :", int(movie.get("year", 0)))
 
         # Synopsis
