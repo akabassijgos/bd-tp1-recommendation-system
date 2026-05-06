@@ -139,7 +139,9 @@ with col1:
     else:
         st.image("https://via.placeholder.com/150", width=150)
 
-    uploaded_file = st.file_uploader("Photo de profil", type=["png", "jpg", "jpeg"])
+    uploaded_file = st.file_uploader("Photo de profil",
+                                     type=["png", "jpg", "jpeg"],
+                                     max_upload_size=2)
 
     if uploaded_file:
         os.makedirs("uploads", exist_ok=True)
