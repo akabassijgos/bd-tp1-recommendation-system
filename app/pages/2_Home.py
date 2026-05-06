@@ -266,6 +266,7 @@ else:
         recs_personal = movies[movies["id"].isin(rec_ids)]
         recs_personal = recs_personal.sort_values("id").reset_index(drop=True)
         render_grid(recs_personal, source="reco")
+        st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.subheader("Films populaires")
 

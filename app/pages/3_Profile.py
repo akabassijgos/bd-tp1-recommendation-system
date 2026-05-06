@@ -220,6 +220,7 @@ else:
     fav_genres = ", ".join(top["genre"].tolist())
 
     st.success(f"Vous aimez principalement : {fav_genres}")
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 
 # ---------------- HISTORY ----------------
@@ -243,6 +244,7 @@ else:
 
             st.caption(row.title)
             st.write(f"⭐ {row.rating}")
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 
 # ---------------- RESET RATINGS ----------------
