@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import create_user
+from user import create_user
 
 
 if "user" in st.session_state and st.session_state.user is not None:

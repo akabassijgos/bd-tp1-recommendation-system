@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from auth import update_profile_picture, delete_all_user_ratings
+from user import update_profile_picture, delete_all_user_ratings
 from ratings import get_user_rating
 from tmdb import get_movie_poster
 from recommender import load_data
@@ -171,7 +171,7 @@ with col2:
     birth_date_in = st.text_input("Date de naissance (YYYY-MM-DD)", value=birth_date or "")
 
     if st.button("Sauvegarder les informations"):
-        from auth import update_user_info
+        from app.user import update_user_info
 
         update_user_info(
             user_id,

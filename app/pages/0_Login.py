@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import authenticate_user
+from user import authenticate_user
 
 
 if "user" in st.session_state and st.session_state.user is not None:
