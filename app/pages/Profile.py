@@ -190,7 +190,7 @@ c2.metric("Note moyenne", round(avg, 2) if count > 0 else "N/A")
 
 
 # ---------------- TASTE PROFILE ----------------
-st.markdown("### 🍿 Taste Profile")
+st.markdown("### 🍿 Profil de goût")
 
 taste = compute_taste_profile(user_id)
 

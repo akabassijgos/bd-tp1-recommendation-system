@@ -164,7 +164,7 @@ def search_movies(query, genre, limit, offset):
 
 
 # ---------------- UI HEADER ----------------
-st.title("🎬 MovieLens Recommender")
+st.title("🎬 Système de Recommandation de Films")
 
 
 # ---------------- SEARCH UI ----------------
