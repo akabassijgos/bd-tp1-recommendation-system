@@ -3,6 +3,12 @@ from auth import create_user
 
 st.set_page_config(layout="centered")
 
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {display: none;}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("Inscription")
 
 with st.form("register_form"):
@@ -24,11 +30,11 @@ with st.form("register_form"):
                 last_name
             )
             st.success("Compte créé avec succès")
-            st.switch_page("auth_pages/Login.py")
+            st.switch_page("pages/0_Login.py")
 
         except ValueError as e:
             st.error(str(e))
 
 st.markdown("Déjà un compte ?")
 if st.button("Se connecter"):
-    st.switch_page("auth_pages/Login.py")
+    st.switch_page("pages/0_Login.py")

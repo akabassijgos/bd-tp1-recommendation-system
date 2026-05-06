@@ -63,7 +63,7 @@ st.markdown("""
 
 # ---------------- DATA LOAD ----------------
 if "user" not in st.session_state or st.session_state.user is None:
-    st.switch_page("auth_pages/Login.py")
+    st.switch_page("pages/0_Login.py")
     st.stop()
 
 ratings, movies = load_data()

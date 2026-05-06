@@ -15,7 +15,7 @@ st.set_page_config(layout="wide")
 
 # ---------------- LOAD USER ----------------
 if "user" not in st.session_state or st.session_state.user is None:
-    st.switch_page("auth_pages/Login.py")
+    st.switch_page("pages/0_Login.py")
     st.stop()
 
 user = st.session_state.get("user")

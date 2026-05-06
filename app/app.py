@@ -9,6 +9,6 @@ if "user" not in st.session_state:
 
 # ---------------- ROUTING ----------------
 if st.session_state.user is None:
-    st.switch_page("auth_pages/Login.py")
+    st.switch_page("pages/0_Login.py")
 else:
-    st.switch_page("pages/Home.py")
+    st.switch_page("pages/2_Home.py")
