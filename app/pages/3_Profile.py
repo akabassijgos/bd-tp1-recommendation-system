@@ -232,10 +232,13 @@ else:
 
     for i, row in enumerate(history.itertuples()):
         with cols[i % 4]:
-            st.image(
-                get_movie_poster(row.tmdb_id) if row.tmdb_id else "",
-                use_container_width=True
-            )
+            poster = get_movie_poster(row.tmdb_id) if row.tmdb_id else None
+
+            if poster:
+                st.image(poster, use_container_width=True)
+            else:
+                st.warning("Image non disponible")
+
             st.caption(row.title)
             st.write(f"⭐ {row.rating}")
 

@@ -85,8 +85,9 @@ def render_card(movie, source="global"):
     title = movie.get("title", "Unknown")
 
     if poster:
-        if st.image(poster, use_container_width=True):
-            pass
+        st.image(poster, use_container_width=True)
+    else:
+        st.warning("Image non disponible")
 
     st.caption(title)
     render_rating_widget(movie, st.session_state.user, source)
@@ -292,6 +293,8 @@ def render_modal_content():
         poster = get_movie_poster(tmdb_id)
         if poster:
             st.image(poster, use_container_width=True)
+        else:
+            st.warning("Image non disponible")
 
     with col2:
         st.title(movie.get("title", "Unknown"))
