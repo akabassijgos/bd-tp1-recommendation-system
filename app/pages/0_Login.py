@@ -1,13 +1,19 @@
 import streamlit as st
 from auth import authenticate_user
 
-st.set_page_config(layout="centered")
+
+if "user" in st.session_state and st.session_state.user is not None:
+    st.switch_page("pages/2_Home.py")
+    st.stop()
+
 
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
+
+st.set_page_config(layout="centered")
 
 st.title("Connexion")
 
