@@ -62,13 +62,13 @@ st.markdown("""
 
 
 # ---------------- DATA LOAD ----------------
+if "user" not in st.session_state or st.session_state.user is None:
+    st.switch_page("auth_pages/Login.py")
+    st.stop()
+
 ratings, movies = load_data()
 
 user = st.session_state.get("user")
-
-if not user:
-    st.warning("Veuillez vous connecter")
-    st.stop()
 
 
 # ---------------- CARD ----------------

@@ -14,11 +14,11 @@ DB_PATH = "app.db"
 st.set_page_config(layout="wide")
 
 # ---------------- LOAD USER ----------------
-user = st.session_state.get("user")
-
-if not user:
-    st.warning("Veuillez vous connecter")
+if "user" not in st.session_state or st.session_state.user is None:
+    st.switch_page("auth_pages/Login.py")
     st.stop()
+
+user = st.session_state.get("user")
 
 
 # ---------------- FETCH USER DATA ----------------
