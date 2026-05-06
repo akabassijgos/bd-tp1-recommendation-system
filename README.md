@@ -597,23 +597,14 @@ pip install -r requirements.txt
 
 ### 11.4 Préparation des données
 
-Avant de lancer l’application, il est nécessaire de préparer les données et initialiser la base de données.
-
-1. **Nettoyage et préparation des datasets :**
-
-```bash
-python3 scripts/prepare_data.py
-```
-
-2. **Initialisation de la base de données :**
+Avant de lancer l’application, il est nécessaire d'initialiser la base de données :
 
 ```bash
 python3 scripts/init_db.py
 ```
 
-Ces scripts permettent :
+Ce script permet :
 
-* de transformer les données MovieLens,
 * de créer les tables SQLite,
 * d’insérer les films et les ratings.
 
