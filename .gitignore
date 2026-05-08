@@ -29,13 +29,13 @@ ENV/
 .streamlit/
 .streamlit/secrets.toml
 
-# =========================
-# SQLite
-# =========================
-*.sqlite
-*.sqlite3
-*.db
-*.db-journal
+# # =========================
+# # SQLite
+# # =========================
+# *.sqlite
+# *.sqlite3
+# *.db
+# *.db-journal
 
 # =========================
 # Machine Learning / scikit-learn
